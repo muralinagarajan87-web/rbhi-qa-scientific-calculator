@@ -1,15 +1,35 @@
-import { test, expect } from '@playwright/test';
-import { CalculatorPage } from '../pages/CalculatorPage';
+import { test, expect } from '../fixtures';
+
+const bugCases = [
+  {
+    id: 'TC-PAR-02', label: '(4+6)+2=12',  bugId: 'BUG-005',
+    reason: 'parser skips token after ")", so "+" between ")" and "2" is lost; result is 10 instead of 12',
+  },
+  {
+    id: 'TC-PAR-03', label: '(2+3)×4=20',  bugId: 'BUG-005',
+    reason: 'parser increments index by 2 on ")", skipping the × token; returns 5 instead of 20',
+  },
+  {
+    id: 'TC-PAR-04', label: '(1+1)×(2+2)=8', bugId: 'BUG-005',
+    reason: 'off-by-one on closing ")" causes post-paren operator to be skipped',
+  },
+  {
+    id: 'TC-PAR-05', label: '(10+2)÷4=3', bugId: 'BUG-005+BUG-003',
+    reason: '")" skips next token; also affected by BUG-003 (division reversed)',
+  },
+  {
+    id: 'TC-PAR-06', label: 'unclosed paren → Error', bugId: 'BUG-011',
+    reason: 'parser silently evaluates inner expression when closing ")" is absent',
+  },
+  {
+    id: 'TC-PAR-07', label: 'stray ")" → Error', bugId: 'BUG-012',
+    reason: 'stray ")" is ignored; "5)" evaluates to 5 instead of Error',
+  },
+];
 
 test.describe('Parentheses & Grouping', () => {
-  let calc: CalculatorPage;
 
-  test.beforeEach(async ({ page }) => {
-    calc = new CalculatorPage(page);
-    await calc.goto();
-  });
-
-  test('TC-PAR-01: (2 + 4) = 6', async () => {
+  test('TC-PAR-01: (2+4) = 6', async ({ calc }) => {
     await calc.pressOpenParen();
     await calc.pressDigit('2');
     await calc.pressAdd();
@@ -19,8 +39,8 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('6');
   });
 
-  test('TC-PAR-02 [BUG-005] (4 + 6) + 2 = 12', async () => {
-    test.fail(true, 'BUG-005: parser skips token after ")", so the "+" between ")" and "2" is lost; result is 10 instead of 12');
+  test(`${bugCases[0].id} [${bugCases[0].bugId}] ${bugCases[0].label}`, async ({ calc }) => {
+    test.fail(true, `${bugCases[0].bugId}: ${bugCases[0].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('4');
     await calc.pressAdd();
@@ -32,8 +52,8 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('12');
   });
 
-  test('TC-PAR-03 [BUG-005] (2 + 3) × 4 = 20', async () => {
-    test.fail(true, 'BUG-005: parser increments index by 2 on ")", skipping the × token; returns 5 instead of 20');
+  test(`${bugCases[1].id} [${bugCases[1].bugId}] ${bugCases[1].label}`, async ({ calc }) => {
+    test.fail(true, `${bugCases[1].bugId}: ${bugCases[1].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('2');
     await calc.pressAdd();
@@ -45,8 +65,8 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('20');
   });
 
-  test('TC-PAR-04 [BUG-005] (1 + 1) × (2 + 2) = 8', async () => {
-    test.fail(true, 'BUG-005: off-by-one on closing ")" causes post-paren operator to be skipped');
+  test(`${bugCases[2].id} [${bugCases[2].bugId}] ${bugCases[2].label}`, async ({ calc }) => {
+    test.fail(true, `${bugCases[2].bugId}: ${bugCases[2].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('1');
     await calc.pressAdd();
@@ -62,8 +82,8 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('8');
   });
 
-  test('TC-PAR-05 [BUG-005] (10 + 2) ÷ 4 = 3', async () => {
-    test.fail(true, 'BUG-005: ")" skips next token; also affected by BUG-003 (division reversed)');
+  test(`${bugCases[3].id} [${bugCases[3].bugId}] ${bugCases[3].label}`, async ({ calc }) => {
+    test.fail(true, `${bugCases[3].bugId}: ${bugCases[3].reason}`);
     await calc.pressOpenParen();
     await calc.typeNumber('10');
     await calc.pressAdd();
@@ -75,8 +95,8 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('3');
   });
 
-  test('TC-PAR-06 [BUG-011] unclosed parenthesis should show Error', async () => {
-    test.fail(true, 'BUG-011: parser silently evaluates inner expression when closing ")" is absent');
+  test(`${bugCases[4].id} [${bugCases[4].bugId}] ${bugCases[4].label}`, async ({ calc }) => {
+    test.fail(true, `${bugCases[4].bugId}: ${bugCases[4].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('5');
     await calc.pressAdd();
@@ -85,8 +105,8 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test('TC-PAR-07 [BUG-012] lone ")" without "(" should show Error', async () => {
-    test.fail(true, 'BUG-012: stray ")" is ignored; "5)" evaluates to 5 instead of Error');
+  test(`${bugCases[5].id} [${bugCases[5].bugId}] ${bugCases[5].label}`, async ({ calc }) => {
+    test.fail(true, `${bugCases[5].bugId}: ${bugCases[5].reason}`);
     await calc.pressDigit('5');
     await calc.pressCloseParen();
     await calc.pressEquals();

@@ -1,25 +1,23 @@
-import { test, expect } from '@playwright/test';
-import { CalculatorPage } from '../pages/CalculatorPage';
+import { test, expect } from '../fixtures';
+import { edgeAdditionCases, edgeMultiplyCases } from '../data/calculatorData';
+
+const bugErrorCases = [
+  { id: 'TC-EDG-03', bugId: 'BUG-009', reason: 'empty expression returns undefined; display shows "undefined" instead of "Error"' },
+  { id: 'TC-EDG-04', bugId: 'BUG-010', reason: 'expression "+" tokenizes to ["+"], parseFloat("+") = NaN, display shows "NaN" instead of "Error"' },
+];
 
 test.describe('Edge Cases & Error Handling', () => {
-  let calc: CalculatorPage;
 
-  test.beforeEach(async ({ page }) => {
-    calc = new CalculatorPage(page);
-    await calc.goto();
-  });
-
-  test('TC-EDG-01 [BUG-008] 5 ÷ 0 should show "Error" or "Infinity"', async () => {
+  test('TC-EDG-01 [BUG-008] 5 ÷ 0 should show "Error" or "Infinity"', async ({ calc }) => {
     test.fail(true, 'BUG-008: division is reversed (BUG-003), so 5÷0 is evaluated as 0÷5 = 0 — real Infinity is never reached');
     await calc.pressDigit('5');
     await calc.pressDivide();
     await calc.pressDigit('0');
     await calc.pressEquals();
-    const display = await calc.getDisplay();
-    expect(['Error', 'Infinity', '∞']).toContain(display);
+    expect(['Error', 'Infinity', '∞']).toContain(await calc.getDisplay());
   });
 
-  test('TC-EDG-02: 0 ÷ 5 current behaviour is Infinity (BUG-003 reversal)', async () => {
+  test('TC-EDG-02: 0 ÷ 5 current behaviour is Infinity (BUG-003 reversal)', async ({ calc }) => {
     await calc.pressDigit('0');
     await calc.pressDivide();
     await calc.pressDigit('5');
@@ -27,20 +25,20 @@ test.describe('Edge Cases & Error Handling', () => {
     expect(await calc.getDisplay()).toBe('Infinity');
   });
 
-  test('TC-EDG-03 [BUG-009] pressing "=" on empty display should show "Error"', async () => {
-    test.fail(true, 'BUG-009: empty expression returns undefined; display shows "undefined" instead of "Error"');
+  test(`${bugErrorCases[0].id} [${bugErrorCases[0].bugId}] pressing "=" on empty display should show "Error"`, async ({ calc }) => {
+    test.fail(true, `${bugErrorCases[0].bugId}: ${bugErrorCases[0].reason}`);
     await calc.pressEquals();
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test('TC-EDG-04 [BUG-010] operator-only expression should show "Error"', async () => {
-    test.fail(true, 'BUG-010: expression "+" tokenizes to ["+"], parseFloat("+") = NaN, display shows "NaN" instead of "Error"');
+  test(`${bugErrorCases[1].id} [${bugErrorCases[1].bugId}] operator-only expression should show "Error"`, async ({ calc }) => {
+    test.fail(true, `${bugErrorCases[1].bugId}: ${bugErrorCases[1].reason}`);
     await calc.pressAdd();
     await calc.pressEquals();
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test('TC-EDG-05: C clears the display after a result', async () => {
+  test('TC-EDG-05: C clears the display after a result', async ({ calc }) => {
     await calc.pressDigit('5');
     await calc.pressAdd();
     await calc.pressDigit('5');
@@ -50,7 +48,7 @@ test.describe('Edge Cases & Error Handling', () => {
     expect(await calc.getDisplay()).toBe('');
   });
 
-  test('TC-EDG-06: C clears the display after an error', async () => {
+  test('TC-EDG-06: C clears the display after an error', async ({ calc }) => {
     await calc.pressDigit('5');
     await calc.pressAdd();
     await calc.pressEquals();
@@ -59,20 +57,15 @@ test.describe('Edge Cases & Error Handling', () => {
     expect(await calc.getDisplay()).toBe('');
   });
 
-  test('TC-EDG-07: 0.1 + 0.2 ≈ 0.3 (floating-point)', async () => {
-    await calc.pressDigit('0');
-    await calc.pressDecimal();
-    await calc.pressDigit('1');
+  test('TC-EDG-07: 0.1 + 0.2 ≈ 0.3', async ({ calc }) => {
+    await calc.typeNumber('0.1');
     await calc.pressAdd();
-    await calc.pressDigit('0');
-    await calc.pressDecimal();
-    await calc.pressDigit('2');
+    await calc.typeNumber('0.2');
     await calc.pressEquals();
-    const result = parseFloat(await calc.getDisplay());
-    expect(result).toBeCloseTo(0.3, 10);
+    expect(parseFloat(await calc.getDisplay())).toBeCloseTo(0.3, 10);
   });
 
-  test('TC-EDG-08: leading decimal – .5 + .5 = 1', async () => {
+  test('TC-EDG-08: .5 + .5 = 1 (leading decimal)', async ({ calc }) => {
     await calc.pressDecimal();
     await calc.pressDigit('5');
     await calc.pressAdd();
@@ -82,23 +75,27 @@ test.describe('Edge Cases & Error Handling', () => {
     expect(await calc.getDisplay()).toBe('1');
   });
 
-  test('TC-EDG-09: large number – 9999999 + 1 = 10000000', async () => {
-    await calc.typeNumber('9999999');
-    await calc.pressAdd();
-    await calc.pressDigit('1');
-    await calc.pressEquals();
-    expect(await calc.getDisplay()).toBe('10000000');
-  });
+  for (const { id, a, b, expected } of edgeAdditionCases) {
+    test(`${id}: ${a} + ${b} = ${expected}`, async ({ calc }) => {
+      await calc.typeNumber(a);
+      await calc.pressAdd();
+      await calc.typeNumber(b);
+      await calc.pressEquals();
+      expect(await calc.getDisplay()).toBe(expected);
+    });
+  }
 
-  test('TC-EDG-10: 0 × 0 = 0', async () => {
-    await calc.pressDigit('0');
-    await calc.pressMultiply();
-    await calc.pressDigit('0');
-    await calc.pressEquals();
-    expect(await calc.getDisplay()).toBe('0');
-  });
+  for (const { id, a, b, expected } of edgeMultiplyCases) {
+    test(`${id}: ${a} × ${b} = ${expected}`, async ({ calc }) => {
+      await calc.typeNumber(a);
+      await calc.pressMultiply();
+      await calc.typeNumber(b);
+      await calc.pressEquals();
+      expect(await calc.getDisplay()).toBe(expected);
+    });
+  }
 
-  test('TC-EDG-11 [BUG-006] sqrt of negative should show "Error" not "NaN"', async () => {
+  test('TC-EDG-11 [BUG-006] sqrt of negative should show "Error" not "NaN"', async ({ calc }) => {
     test.fail(true, 'BUG-006: Math.sqrt(negative) returns NaN; calculator should display "Error"');
     await calc.page.evaluate(() => {
       (document.getElementById('display') as HTMLInputElement).value = '-4';
@@ -107,14 +104,14 @@ test.describe('Edge Cases & Error Handling', () => {
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test('TC-EDG-12 [BUG-007] log(0) should show "Error" not "-Infinity"', async () => {
+  test('TC-EDG-12 [BUG-007] log(0) should show "Error" not "-Infinity"', async ({ calc }) => {
     test.fail(true, 'BUG-007: Math.log10(0) = -Infinity; calculator should display "Error"');
     await calc.pressDigit('0');
     await calc.pressLog();
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test('TC-EDG-13 [BUG-007] log of negative number should show "Error" not "NaN"', async () => {
+  test('TC-EDG-13 [BUG-007] log of negative should show "Error" not "NaN"', async ({ calc }) => {
     test.fail(true, 'BUG-007: Math.log10(negative) = NaN; calculator should display "Error"');
     await calc.page.evaluate(() => {
       (document.getElementById('display') as HTMLInputElement).value = '-1';
@@ -123,18 +120,18 @@ test.describe('Edge Cases & Error Handling', () => {
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test('TC-EDG-14: result used in next operation – (2+4) + 4 = 10', async () => {
-    await calc.pressDigit('2');
+  test('TC-EDG-14: result used in next operation – (2+4)+4 = 10', async ({ calc }) => {
+    await calc.typeNumber('2');
     await calc.pressAdd();
-    await calc.pressDigit('4');
+    await calc.typeNumber('4');
     await calc.pressEquals();
     await calc.pressAdd();
-    await calc.pressDigit('4');
+    await calc.typeNumber('4');
     await calc.pressEquals();
     expect(await calc.getDisplay()).toBe('10');
   });
 
-  test('TC-EDG-15: expression ending with operator shows Error', async () => {
+  test('TC-EDG-15: expression ending with operator shows Error', async ({ calc }) => {
     await calc.pressDigit('5');
     await calc.pressAdd();
     await calc.pressEquals();
