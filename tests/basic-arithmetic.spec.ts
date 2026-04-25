@@ -1,16 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { CalculatorPage } from '../pages/CalculatorPage';
 
-/**
- * Basic Arithmetic Tests
- *
- * Covers: addition, subtraction, multiplication, division, chained
- * operations, and multi-digit number entry.
- *
- * Tests annotated with test.fail() document confirmed bugs; they are
- * expected to fail against the current build and must be fixed before
- * release.
- */
 test.describe('Basic Arithmetic', () => {
   let calc: CalculatorPage;
 
@@ -19,10 +9,7 @@ test.describe('Basic Arithmetic', () => {
     await calc.goto();
   });
 
-  // ── Addition ──────────────────────────────────────────────────────────────
-
   test('TC-ADD-01: 2 + 4 = 6', async () => {
-    // Avoids digit "3" (BUG-001) to keep this test isolated to addition.
     await calc.pressDigit('2');
     await calc.pressAdd();
     await calc.pressDigit('4');
@@ -58,8 +45,6 @@ test.describe('Basic Arithmetic', () => {
     expect(await calc.getDisplay()).toBe('1000');
   });
 
-  // ── Subtraction ───────────────────────────────────────────────────────────
-
   test('TC-SUB-01 [BUG-002] 9 − 4 = 5', async () => {
     test.fail(true, 'BUG-002: "−" button appends "/" so expression becomes "9/4", not "9-4"');
     await calc.pressDigit('9');
@@ -87,8 +72,6 @@ test.describe('Basic Arithmetic', () => {
     expect(await calc.getDisplay()).toBe('-5');
   });
 
-  // ── Multiplication ────────────────────────────────────────────────────────
-
   test('TC-MUL-01: 6 × 4 = 24', async () => {
     await calc.pressDigit('6');
     await calc.pressMultiply();
@@ -114,8 +97,6 @@ test.describe('Basic Arithmetic', () => {
     await calc.pressEquals();
     expect(await calc.getDisplay()).toBe('10');
   });
-
-  // ── Division ──────────────────────────────────────────────────────────────
 
   test('TC-DIV-01 [BUG-003] 10 ÷ 2 = 5', async () => {
     test.fail(true, 'BUG-003: division is reversed (right÷left), so 10÷2 returns 0.2 instead of 5');
@@ -144,8 +125,6 @@ test.describe('Basic Arithmetic', () => {
     expect(await calc.getDisplay()).toBe('0.25');
   });
 
-  // ── Digit 3 key ───────────────────────────────────────────────────────────
-
   test('TC-KEY-01 [BUG-001] pressing "3" button appends digit 3', async () => {
     test.fail(true, 'BUG-001: "3" button is mapped to append("0"); pressing it shows 0 not 3');
     await calc.pressDigit('3');
@@ -161,10 +140,7 @@ test.describe('Basic Arithmetic', () => {
     expect(await calc.getDisplay()).toBe('6');
   });
 
-  // ── Chained operations ────────────────────────────────────────────────────
-
   test('TC-CHN-01: 4 + 2 + 4 = 10 (left-to-right addition)', async () => {
-    // Uses only digits 0,1,2,4-9 to avoid BUG-001 (digit "3" wired to "0").
     await calc.pressDigit('4');
     await calc.pressAdd();
     await calc.pressDigit('2');

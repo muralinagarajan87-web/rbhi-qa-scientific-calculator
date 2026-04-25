@@ -38,12 +38,10 @@ test.describe('UI – Structure & Layout', () => {
   test('TC-UI-06: clear button resets display to empty', async () => {
     await calc.pressDigit('5');
     await calc.pressAdd();
-    await calc.pressDigit('3');
+    await calc.pressDigit('9');
     await calc.pressClear();
     expect(await calc.getDisplay()).toBe('');
   });
-
-  // ── Structural bug checks (these assert the correct wiring; fail = bug) ──
 
   test('TC-UI-07 [BUG-001] button "3" must append digit 3, not 0', async () => {
     test.fail(true, 'BUG-001: "3" button is wired to append("0") instead of append("3")');
