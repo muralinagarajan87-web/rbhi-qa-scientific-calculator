@@ -29,7 +29,7 @@ const bugCases = [
 
 test.describe('Parentheses & Grouping', () => {
 
-  test('TC-PAR-01: (2+4) = 6', async ({ calc }) => {
+  test('TC-PAR-01: (2+4) = 6', { tag: ['@smoke', '@regression'] }, async ({ calc }) => {
     await calc.pressOpenParen();
     await calc.pressDigit('2');
     await calc.pressAdd();
@@ -39,7 +39,7 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('6');
   });
 
-  test(`${bugCases[0].id} [${bugCases[0].bugId}] ${bugCases[0].label}`, async ({ calc }) => {
+  test(`${bugCases[0].id} [${bugCases[0].bugId}] ${bugCases[0].label}`, { tag: ['@regression', '@bug'] }, async ({ calc }) => {
     test.fail(true, `${bugCases[0].bugId}: ${bugCases[0].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('4');
@@ -52,7 +52,7 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('12');
   });
 
-  test(`${bugCases[1].id} [${bugCases[1].bugId}] ${bugCases[1].label}`, async ({ calc }) => {
+  test(`${bugCases[1].id} [${bugCases[1].bugId}] ${bugCases[1].label}`, { tag: ['@regression', '@bug'] }, async ({ calc }) => {
     test.fail(true, `${bugCases[1].bugId}: ${bugCases[1].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('2');
@@ -65,7 +65,7 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('20');
   });
 
-  test(`${bugCases[2].id} [${bugCases[2].bugId}] ${bugCases[2].label}`, async ({ calc }) => {
+  test(`${bugCases[2].id} [${bugCases[2].bugId}] ${bugCases[2].label}`, { tag: ['@regression', '@bug'] }, async ({ calc }) => {
     test.fail(true, `${bugCases[2].bugId}: ${bugCases[2].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('1');
@@ -82,7 +82,7 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('8');
   });
 
-  test(`${bugCases[3].id} [${bugCases[3].bugId}] ${bugCases[3].label}`, async ({ calc }) => {
+  test(`${bugCases[3].id} [${bugCases[3].bugId}] ${bugCases[3].label}`, { tag: ['@regression', '@bug'] }, async ({ calc }) => {
     test.fail(true, `${bugCases[3].bugId}: ${bugCases[3].reason}`);
     await calc.pressOpenParen();
     await calc.typeNumber('10');
@@ -95,7 +95,7 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('3');
   });
 
-  test(`${bugCases[4].id} [${bugCases[4].bugId}] ${bugCases[4].label}`, async ({ calc }) => {
+  test(`${bugCases[4].id} [${bugCases[4].bugId}] ${bugCases[4].label}`, { tag: ['@regression', '@bug'] }, async ({ calc }) => {
     test.fail(true, `${bugCases[4].bugId}: ${bugCases[4].reason}`);
     await calc.pressOpenParen();
     await calc.pressDigit('5');
@@ -105,7 +105,7 @@ test.describe('Parentheses & Grouping', () => {
     expect(await calc.getDisplay()).toBe('Error');
   });
 
-  test(`${bugCases[5].id} [${bugCases[5].bugId}] ${bugCases[5].label}`, async ({ calc }) => {
+  test(`${bugCases[5].id} [${bugCases[5].bugId}] ${bugCases[5].label}`, { tag: ['@regression', '@bug'] }, async ({ calc }) => {
     test.fail(true, `${bugCases[5].bugId}: ${bugCases[5].reason}`);
     await calc.pressDigit('5');
     await calc.pressCloseParen();
