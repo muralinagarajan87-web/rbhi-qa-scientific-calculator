@@ -1,6 +1,6 @@
 #  Scientific Calculator — QA Playwright Framework
 
-Automated E2E test suite for the [Scientific Calculator](https://rbihubcodechallenge.github.io/calculator/index.html) as part of the Reserve Bank Innovation Hub QA Architect assessment.
+Automated E2E test suite for the [Scientific Calculator](https://rbihubcodechallenge.github.io/calculator/index.html) 
 
 ## Tech Stack
 
